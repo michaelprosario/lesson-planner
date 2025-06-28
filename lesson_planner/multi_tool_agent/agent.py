@@ -58,10 +58,10 @@ root_agent = Agent(
     name="weather_time_agent",
     model="gemini-2.0-flash",
     description=(
-        "Agent to answer questions about the time and weather in a city."
+        "Agent to help plan curriculum for coding lessons."
     ),
     instruction=(
-        "You are a helpful agent who can answer user questions about the time and weather in a city."
+        "You are a helpful agent who can draft lessons plans for a particular coding topic."
     ),
-    tools=[get_weather, get_current_time],
+    tools=[],
 )
