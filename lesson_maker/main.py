@@ -48,6 +48,30 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 # 'gemini-1.5-pro-latest' or 'gemini-1.5-flash-latest'
 MODEL_NAME = "gemini-1.5-pro-latest" # Or 'gemini-1.5-flash-latest' for lower latency
 
+def make_lesson_content(lessonSpec: str) -> str:
+    """
+    Generates content for a lesson based on the provided lesson specification.
+    """
+    model = genai.GenerativeModel(
+        model_name=MODEL_NAME,
+        generation_config={
+            "temperature": 0.1,  # Low temperature for more deterministic output
+            "response_mime_type": "text/plain"
+        }
+    )
+
+    # print("Sending prompt to Gemini...")
+
+    prompt = "Write a lesson. Define critical concepts. Provide samples of concepts. Draft exercises that explore the concepts. Return content as markdown. Write lesson about this topic: "
+    response = model.generate_content(f'{prompt} {lessonSpec}')
+
+    if response.text:
+        #print("Received content from Gemini.")
+        return response.text.strip()
+    else:
+        print("No content received from Gemini.")
+        return ""
+
 def get_lessons_plan_json(user_prompt: str) -> Dict:
     """
     Generates a Python learning plan in a consistent JSON format using Gemini.
@@ -92,7 +116,7 @@ def get_lessons_plan_json(user_prompt: str) -> Dict:
         "Ensure the output is a JSON object strictly following the provided schema."
     )
 
-    print("Sending prompt to Gemini...")
+    # print("Sending prompt to Gemini...")
     response = model.generate_content(full_prompt)
 
     try:
@@ -100,10 +124,10 @@ def get_lessons_plan_json(user_prompt: str) -> Dict:
         # and the output is valid JSON. The result.text will be the JSON string.
         import json
         json_output = json.loads(response.text)
-        print("Received valid JSON output.")
+        # print("Received valid JSON output.")
         return json_output
     except json.JSONDecodeError:
-        print("Error: Gemini did not return valid JSON. Raw response:")
+        # print("Error: Gemini did not return valid JSON. Raw response:")
         print(response.text)
         return {"error": "Invalid JSON from model", "raw_response": response.text}
     except Exception as e:
@@ -126,10 +150,13 @@ if __name__ == "__main__":
             lesson.name = lesson.name.strip()
             lesson.description = lesson.description.strip()
             lesson.topics = [topic.strip() for topic in lesson.topics]
-            print(f"Lesson: {lesson.name}")
-            print(f"Description: {lesson.description}")
-            print(f"Topics: {', '.join(lesson.topics)}\n")  
-            print("-----")
+
+            # create on string with all the data about lesson
+
+            lessonString = f"{lesson.name} - {lesson.description} - Topics: {', '.join(lesson.topics)}"
+
+            lessonMarkdown = make_lesson_content(lessonString)
+            print(lessonMarkdown)
 
         #print(json.dumps(plan, indent=2))
     else:
