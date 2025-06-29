@@ -13,11 +13,31 @@ class Lesson:
     description: str
     topics: List[str]
 
-class PythonCoursePlan:
+    def __init__(self, name: str, description: str, topics: List[str]):
+        self.name = name
+        self.description = description
+        self.topics = topics
+
+class CoursePlan:
     title: str
     target_audience: str
     overall_goal: str
     lessons: List[Lesson]
+
+    @classmethod
+    def from_json(cls, json_data: Dict) -> 'CoursePlan':
+        """
+        Create a CoursePlan instance from a JSON dictionary.
+        """
+        instance = cls()
+        instance.title = json_data.get("title", "")
+        instance.target_audience = json_data.get("target_audience", "")
+        instance.overall_goal = json_data.get("overall_goal", "")
+        instance.lessons = [
+            Lesson(name=lesson["name"], description=lesson["description"], topics=lesson["topics"])
+            for lesson in json_data.get("lessons", [])
+        ]
+        return instance
 
 # --- 2. Configure the Gemini API ---
 # Replace 'YOUR_API_KEY' with your actual Gemini API key,
@@ -98,6 +118,19 @@ if __name__ == "__main__":
 
     if "error" not in plan:
         import json
-        print(json.dumps(plan, indent=2))
+
+        coursePlan = CoursePlan.from_json(plan)
+
+        lessons = coursePlan.lessons
+        for lesson in lessons:
+            lesson.name = lesson.name.strip()
+            lesson.description = lesson.description.strip()
+            lesson.topics = [topic.strip() for topic in lesson.topics]
+            print(f"Lesson: {lesson.name}")
+            print(f"Description: {lesson.description}")
+            print(f"Topics: {', '.join(lesson.topics)}\n")  
+            print("-----")
+
+        #print(json.dumps(plan, indent=2))
     else:
         print(plan)
