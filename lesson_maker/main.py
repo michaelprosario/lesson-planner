@@ -110,7 +110,7 @@ def get_lessons_plan_json(user_prompt: str) -> Dict:
 
     # Your original prompt
     full_prompt = (
-        "As an instructional designer, draft a learning plan for teaching a novice about Python. "
+        user_prompt + " "
         "The plan should span multiple lessons, guiding them from basic concepts to more advanced topics. "
         "Each lesson should have a name, description, and a list of specific topics covered. "
         "Ensure the output is a JSON object strictly following the provided schema."
@@ -137,7 +137,7 @@ def get_lessons_plan_json(user_prompt: str) -> Dict:
 # --- Execute the prompt ---
 if __name__ == "__main__":
     plan = get_lessons_plan_json(
-        "as an instructional designer, draft a plan for teaching a novice about python. The plan should span multiple lessons."
+        "as an instructional designer, draft a plan for teaching a novice about javascript. The plan should span multiple lessons."
     )
 
     if "error" not in plan:
