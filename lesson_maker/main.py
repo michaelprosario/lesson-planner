@@ -1,0 +1,103 @@
+import google.generativeai as genai
+import os
+from typing import List, Dict, Union, Literal
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+# --- 1. Define your JSON Schema using Python typing ---
+
+class Lesson:
+    name: str
+    description: str
+    topics: List[str]
+
+class PythonCoursePlan:
+    title: str
+    target_audience: str
+    overall_goal: str
+    lessons: List[Lesson]
+
+# --- 2. Configure the Gemini API ---
+# Replace 'YOUR_API_KEY' with your actual Gemini API key,
+# or set it as an environment variable (recommended)
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+# Choose a suitable Gemini model. Gemini 1.5 Pro and Flash are excellent for structured output.
+# 'gemini-1.5-pro-latest' or 'gemini-1.5-flash-latest'
+MODEL_NAME = "gemini-1.5-pro-latest" # Or 'gemini-1.5-flash-latest' for lower latency
+
+def get_lessons_plan_json(user_prompt: str) -> Dict:
+    """
+    Generates a Python learning plan in a consistent JSON format using Gemini.
+    """
+    model = genai.GenerativeModel(
+        model_name=MODEL_NAME,
+        generation_config={
+            "temperature": 0.1,  # Low temperature for more deterministic output
+            "response_mime_type": "application/json",
+            "response_schema": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string", "description": "Overall title of the learning plan."},
+                    "target_audience": {"type": "string", "description": "The intended audience for this plan."},
+                    "overall_goal": {"type": "string", "description": "The main objective of the learning plan."},
+                    "lessons": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {"type": "string", "description": "Name of the lesson."},
+                                "description": {"type": "string", "description": "Brief description of the lesson content."},
+                                "topics": {
+                                    "type": "array",
+                                    "items": {"type": "string", "description": "Key topics covered in the lesson."}
+                                }
+                            },
+                            "required": ["name", "description", "topics"]
+                        }
+                    }
+                },
+                "required": ["title", "target_audience", "overall_goal", "lessons"]
+            }
+        }
+    )
+
+    # Your original prompt
+    full_prompt = (
+        "As an instructional designer, draft a learning plan for teaching a novice about Python. "
+        "The plan should span multiple lessons, guiding them from basic concepts to more advanced topics. "
+        "Each lesson should have a name, description, and a list of specific topics covered. "
+        "Ensure the output is a JSON object strictly following the provided schema."
+    )
+
+    print("Sending prompt to Gemini...")
+    response = model.generate_content(full_prompt)
+
+    try:
+        # Gemini automatically parses the JSON when response_mime_type is set
+        # and the output is valid JSON. The result.text will be the JSON string.
+        import json
+        json_output = json.loads(response.text)
+        print("Received valid JSON output.")
+        return json_output
+    except json.JSONDecodeError:
+        print("Error: Gemini did not return valid JSON. Raw response:")
+        print(response.text)
+        return {"error": "Invalid JSON from model", "raw_response": response.text}
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return {"error": str(e), "raw_response": response.text}
+
+# --- Execute the prompt ---
+if __name__ == "__main__":
+    plan = get_lessons_plan_json(
+        "as an instructional designer, draft a plan for teaching a novice about python. The plan should span multiple lessons."
+    )
+
+    if "error" not in plan:
+        import json
+        print(json.dumps(plan, indent=2))
+    else:
+        print(plan)
