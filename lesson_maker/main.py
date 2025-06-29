@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 # --- 1. Define your JSON Schema using Python typing ---
 
 class Lesson:
@@ -59,8 +58,6 @@ def make_lesson_content(lessonSpec: str) -> str:
             "response_mime_type": "text/plain"
         }
     )
-
-    # print("Sending prompt to Gemini...")
 
     prompt = "Write a lesson. Define critical concepts. Provide samples of concepts. Draft exercises that explore the concepts. Return content as markdown. Write lesson about this topic: "
     response = model.generate_content(f'{prompt} {lessonSpec}')
@@ -137,11 +134,10 @@ def get_lessons_plan_json(user_prompt: str) -> Dict:
 # --- Execute the prompt ---
 if __name__ == "__main__":
     plan = get_lessons_plan_json(
-        "as an instructional designer, draft a plan for teaching a novice about javascript. The plan should span multiple lessons."
+        "as an instructional designer, draft a plan for teaching a novice about cell biology. The plan should span multiple lessons."
     )
 
     if "error" not in plan:
-        import json
 
         coursePlan = CoursePlan.from_json(plan)
 
@@ -152,12 +148,10 @@ if __name__ == "__main__":
             lesson.topics = [topic.strip() for topic in lesson.topics]
 
             # create on string with all the data about lesson
-
             lessonString = f"{lesson.name} - {lesson.description} - Topics: {', '.join(lesson.topics)}"
 
             lessonMarkdown = make_lesson_content(lessonString)
             print(lessonMarkdown)
 
-        #print(json.dumps(plan, indent=2))
     else:
         print(plan)
