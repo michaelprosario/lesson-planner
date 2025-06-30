@@ -133,8 +133,9 @@ def get_lessons_plan_json(user_prompt: str) -> Dict:
 
 # --- Execute the prompt ---
 if __name__ == "__main__":
+    keyTopic = "Encouraging usability by design: tools for business analysts and product managers"
     plan = get_lessons_plan_json(
-        "as an instructional designer, draft a plan for teaching a novice about cell biology. The plan should span multiple lessons."
+        f"as an instructional designer, draft a plan for teaching a novice about {keyTopic}. The plan should span multiple lessons."
     )
 
     if "error" not in plan:
