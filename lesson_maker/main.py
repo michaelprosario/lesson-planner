@@ -133,7 +133,7 @@ def get_lessons_plan_json(user_prompt: str) -> Dict:
 
 # --- Execute the prompt ---
 if __name__ == "__main__":
-    keyTopic = "Encouraging usability by design: tools for business analysts and product managers"
+    keyTopic = "Writing a 2D platformer game using Unity 3d.  The game should be similar to super mario brothers.  Please make sure to provide code examples for key concepts and behaviors."
     plan = get_lessons_plan_json(
         f"as an instructional designer, draft a plan for teaching a novice about {keyTopic}. The plan should span multiple lessons."
     )
